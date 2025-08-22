@@ -4,6 +4,9 @@
 {{- include "spire-lib.check-strict-mode" (list . "caSubject.country must be set" (eq (include "spire-server.ca-subject-country" .) "ARPA"))}}
 {{- include "spire-lib.check-strict-mode" (list . "caSubject.organization must be set" (eq (include "spire-server.ca-subject-organization" .) "Example"))}}
 {{- include "spire-lib.check-strict-mode" (list . "caSubject.commonNname must be set" (eq (include "spire-server.ca-subject-common-name" .) "example.org"))}}
+{{- define "spire-server.yaml-config" -}}
+{{- $upstreamAuthorityUsed := 0 }}
+{{- $keyManagerUsed := 0 }}
 {{- range $type, $tvals := .Values.customPlugins }}
 {{-   if not (has $type (list "bundlePublisher" "credentialComposer" "keyManager" "nodeAttestor" "upstreamAuthority" "notifier")) }}
 {{-     fail (printf "Unknown plugin type specified: %s" $type) }}
@@ -19,6 +22,12 @@
 {{-       if not (has $sname (list "plugin_cmd" "plugin_checksum" "plugin_data")) }}
 {{-         fail (printf "Unknown plugin setting specified: %s" $sname) }}
 {{-       end }}
+{{-     end }}
+{{-     if eq $type "keyManager" }}
+{{-       $keyManagerUsed = add1 $keyManagerUsed }}
+{{-     end }}
+{{-     if eq $type "upstreamAuthority" }}
+{{-       $upstreamAuthorityUsed = add1 $upstreamAuthorityUsed }}
 {{-     end }}
 {{-   end }}
 {{- end }}
@@ -38,9 +47,6 @@
 {{- if and (eq (.Values.keyManager.awsKMS.keyIdentifierFile.enabled | toString) "true") (eq (.Values.keyManager.awsKMS.keyIdentifierValue.enabled | toString ) "true") }}
 {{-   fail "You can only enable one of keyIdentifierFile or keyIdentifierValue at a time" }}
 {{- end }}
-{{- define "spire-server.yaml-config" -}}
-{{- $upstreamAuthorityUsed := 0 }}
-{{- $keyManagerUsed := 0 }}
 {{- $root := . }}
 server:
 {{- with .Values.adminIDs }}

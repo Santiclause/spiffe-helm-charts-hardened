@@ -41,7 +41,9 @@
 {{- end }}
 
 {{- define "spire-lib.registry" }}
-{{- if ne (len (dig "spire" "image" "registry" "" .global)) 0 }}
+{{- if and (.image.registryOverride) (ne (len (.image.registryOverride)) 0) }}
+{{- print .image.registryOverride "/"}}
+{{- else if ne (len (dig "spire" "image" "registry" "" .global)) 0 }}
 {{- print .global.spire.image.registry "/"}}
 {{- else if ne (len (.image.registry)) 0 }}
 {{- print .image.registry "/"}}
