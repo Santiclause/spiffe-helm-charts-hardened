@@ -35,7 +35,11 @@ domains:
 
 {{- if eq (include "spiffe-oidc-discovery-provider.tls-enabled" .) "false" }}
 allow_insecure_scheme: true
+{{- if .Values.tls.insecureAddr }}
+insecure_addr: ':8442'
+{{- else }}
 listen_socket_path: {{ $oidcSocket | quote }}
+{{- end }}
 {{- else }}
 serving_cert_file:
   cert_file_path: /certs/tls.crt
@@ -74,7 +78,7 @@ metadata:
 data:
   oidc-discovery-provider.conf: |
     {{- include "spiffe-oidc-discovery-provider.yaml-config" (dict "oidcSocket" $oidcSocket "root" .) | fromYaml | toPrettyJson | nindent 4 }}
-  {{- if eq (include "spiffe-oidc-discovery-provider.tls-enabled" .) "false" }}
+  {{- if and (eq (include "spiffe-oidc-discovery-provider.tls-enabled" .) "false") (not .Values.tls.insecureAddr) }}
   default.conf: |
     upstream oidc {
       server unix:{{ $oidcSocket }};

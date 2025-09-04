@@ -85,6 +85,10 @@ spec:
             - containerPort: 8443
               name: https
           {{- end }}
+          {{- if .Values.tls.insecureAddr }}
+            - containerPort: 8442
+              name: http
+          {{- end }}
           volumeMounts:
             {{- if eq .Values.bundleSource "ConfigMap" }}
             - name: spiffe-bundle
@@ -139,7 +143,7 @@ spec:
             - name: certdir
               mountPath: /certs
         {{- end }}
-        {{- if not $tlsEnabled }}
+        {{- if and (not $tlsEnabled) (not .Values.tls.insecureAddr) }}
         - name: nginx
           securityContext:
             {{- include "spire-lib.securitycontext" . | nindent 12 }}
