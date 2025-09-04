@@ -30,15 +30,19 @@ spec:
             exit 0
           fi
           exit 1
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     {{- if eq (.Values.federation.enabled | toString) "true" }}
     - name: curl-federation-bundle-endpoint
       image: {{ template "spire-lib.image" (dict "image" .Values.tests.bash.image "global" .Values.global) }}
       command: ['curl']
       args: ['-k', '-s', '-f', 'https://{{ include "spire-server.fullname" . }}.{{ include "spire-server.namespace" . }}.svc.{{ include "spire-lib.cluster-domain" . }}:{{ .Values.federation.bundleEndpoint.port }}']
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     {{- end }}
     {{- if .Values.federation.ingress.enabled }}
     - name: federation-ingress
@@ -51,8 +55,10 @@ spec:
         - name: custom-ca
           mountPath: /ca
       {{- end }}
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     {{- end }}
   {{- if ne (len (dig "tests" "hostAliases" "" $values)) 0 }}
   hostAliases:

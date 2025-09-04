@@ -26,20 +26,26 @@ spec:
       image: {{ template "spire-lib.image" (dict "image" .Values.tests.bash.image "global" .Values.global) }}
       command: ['curl']
       args: ['-s', '-f', '-k', '{{ $protocol }}://{{ include "spiffe-oidc-discovery-provider.fullname" . }}:{{ $port }}/.well-known/openid-configuration']
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     - name: curl-service-name-namespace
       image: {{ template "spire-lib.image" (dict "image" .Values.tests.bash.image "global" .Values.global) }}
       command: ['curl']
       args: ['-s', '-f', '-k', '{{ $protocol }}://{{ include "spiffe-oidc-discovery-provider.fullname" . }}.{{ include "spiffe-oidc-discovery-provider.namespace" . }}:{{ $port }}/.well-known/openid-configuration']
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     - name: curl-service-name-namespace-svc-cluster-local
       image: {{ template "spire-lib.image" (dict "image" .Values.tests.bash.image "global" .Values.global) }}
       command: ['curl']
       args: ['-s', '-f', '-k', '{{ $protocol }}://{{ include "spiffe-oidc-discovery-provider.fullname" . }}.{{ include "spiffe-oidc-discovery-provider.namespace" . }}.svc.{{ include "spire-lib.cluster-domain" . }}:{{ $port }}/.well-known/openid-configuration']
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     {{- if .Values.ingress.enabled }}
     - name: curl-ingress
       image: {{ template "spire-lib.image" (dict "image" .Values.tests.bash.image "global" .Values.global) }}
@@ -58,8 +64,10 @@ spec:
       {{- else }}
       args: ['-s', '-f', 'http://{{ $host }}/.well-known/openid-configuration']
       {{- end }}
+      {{- if not .Values.global.disableBashTestSecurityContext }}
       securityContext:
         {{- include "spire-lib.securitycontext" . | nindent 8 }}
+      {{- end }}
     {{- end }}
   {{- if ne (len (dig "tests" "hostAliases" "" $values)) 0 }}
   hostAliases:
